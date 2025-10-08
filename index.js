@@ -13,9 +13,9 @@ connectDB();
 app.use(express.urlencoded());
 app.use(methodOverride('_method'));
 
-app.get("/", (req, res) => {
-  res.render("home.ejs");   //this is for home page
-});
+// app.get("/", (req, res) => {
+//   res.render("home.ejs");   //this is for home page
+// });
 
 const postRoutes = require("./routes/post.routes");      // all the paths related to posts
 const commentRoutes = require("./routes/comments.routes");  // all the paths related to comments

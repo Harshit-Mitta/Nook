@@ -1,5 +1,24 @@
-
 <% layout('/layouts/boilerplate.ejs') -%>
-  <h1>HOME PAGE</h1>
 
-  
+<div class="container mt-4 d-flex flex-column align-items-center">
+  <% if (posts && posts.length > 0) { %>
+    <% for (let post of posts) { %>
+      <div class="card mb-4 shadow-sm" style="width: 650px; border-radius: 12px;">
+        <div class="card-body">
+          <h6 class="text-muted mb-2">@<%= post.author %></h6>
+          <% if (post.image) { %>
+            <img src="<%= post.image %>" alt="Post Image" class="img-fluid rounded mb-3" style="max-height: 350px; object-fit: cover;">
+          <% } %>
+          <h5 class="card-title fw-bold"><%= post.title %></h5>
+          <p class="card-text"><%= post.content %></p>
+          <div class="d-flex justify-content-between align-items-center">
+            <span>❤️ <%= post.likes %></span>
+            <a href="/posts/<%= post._id %>" class="btn btn-sm btn-outline-primary">View</a>
+          </div>
+        </div>
+      </div>
+    <% } %>
+  <% } else { %>
+    <p>No posts yet!</p>
+  <% } %>
+</div>
