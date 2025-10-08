@@ -13,6 +13,7 @@ connectDB();
 app.use(express.urlencoded());
 app.use(methodOverride('_method'));
 
+<<<<<<< HEAD
 app.get("/", async (req, res) => {
   try {
     const PostModel = require("./Models/post.model");
@@ -23,6 +24,11 @@ app.get("/", async (req, res) => {
     res.render("home.ejs", { posts: [] });
   }
 });
+=======
+// app.get("/", (req, res) => {
+//   res.render("home.ejs");   //this is for home page
+// });
+>>>>>>> f1775bea69f97d6de802cd973f2b06c4acb9e568
 
 const postRoutes = require("./routes/post.routes");      // all the paths related to posts
 const commentRoutes = require("./routes/comments.routes");  // all the paths related to comments

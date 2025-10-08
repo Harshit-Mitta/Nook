@@ -6,10 +6,10 @@ const { createPostSchema } = require("../validators/post");
 
 const router = express.Router();
 
-router.get("/posts", async (req, res) => {
+router.get("/", async (req, res) => {
     try{
   const posts = await PostModel.find();
-  res.render("posts/list.ejs", { posts });
+  res.render("home.ejs", { posts });
     }
     catch(error){
         res.render("error",{error:error});
