@@ -1,0 +1,28 @@
+<% layout('/layouts/boilerplate.ejs') -%>
+
+<div class="container mt-4">
+  <form action="/posts" method="POST">
+    <div class="mb-3">
+      <label for="post-title" class="form-label">Post Title</label>
+      <input name="title" type="text" class="form-control" id="post-title" placeholder="">
+    </div>
+    <div class="mb-3">
+      <label for="author" class="form-label">Author</label>
+      <input name="author" type="text" class="form-control" id="author" placeholder="">
+    </div>
+    <div class="mb-3">
+      <label for="likes" class="form-label">Post likes</label>
+      <input name="likes" type="text" class="form-control" id="likes" placeholder="">
+    </div>
+    <div class="mb-3">
+      <label for="post-img" class="form-label">Post Image</label>
+      <input name="image" type="text" class="form-control" id="post-img" placeholder="">
+    </div>
+    <div class="mb-3">
+      <label for="content" class="form-label">Post Content </label>
+      <textarea name="content" class="form-control" id="content" rows="3"></textarea>
+    </div>
+
+    <button class="btn btn-sm btn-primary">Add Post</button>
+  </form>
+</div>
