@@ -13,9 +13,22 @@ connectDB();
 app.use(express.urlencoded());
 app.use(methodOverride('_method'));
 
+
+app.get("/", async (req, res) => {
+  try {
+    const PostModel = require("./Models/post.model");
+    const posts = await PostModel.find().sort({ createdAt: -1 });
+    res.render("home.ejs", { posts });
+  } catch (error) {
+    console.log(error);
+    res.render("home.ejs", { posts: [] });
+  }
+});
+
 // app.get("/", (req, res) => {
 //   res.render("home.ejs");   //this is for home page
 // });
+
 
 const postRoutes = require("./routes/post.routes");      // all the paths related to posts
 const commentRoutes = require("./routes/comments.routes");  // all the paths related to comments
