@@ -1,3 +1,4 @@
+// post routes
 const express = require("express")
 const PostModel = require("../Models/post.model");
 const validate = require("../middlewares/validate");
