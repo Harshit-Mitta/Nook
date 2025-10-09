@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sign Up | Nook</title>
+  <link rel="stylesheet" href="/styles/login.css">
+</head>
+<body>
+  <div class="login-container">
+    <h2>Create Account</h2>
+    <form action="/signup" method="POST">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" name="username" required>
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="uuidPassword" required>
+      </div>
+
+      <button type="submit" class="btn">Sign Up</button>
+    </form>
+    <p>Already have an account? <a href="/login">Login</a></p>
+  </div>
+</body>
+</html>

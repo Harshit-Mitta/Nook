@@ -1,41 +1,57 @@
 require("dotenv").config();
 const express = require("express");
 const connectDB = require("./config/db");
-const methodOverride = require('method-override');
+const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
-const PORT = process.env.PORT;
+const session = require("express-session");
+const path = require("path");
+
+const PORT = process.env.PORT || 3000;
 
 const app = express();
-app.engine("ejs", ejsMate);
 
+// Connect to MongoDB
 connectDB();
 
-app.use(express.urlencoded());
-app.use(methodOverride('_method'));
+// ---------------- MIDDLEWARE ----------------
+app.engine("ejs", ejsMate);
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
+app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride("_method"));
+app.use(express.static(path.join(__dirname, "public"))); // for CSS, images, JS
 
-app.get("/", async (req, res) => {
-  try {
-    const PostModel = require("./Models/post.model");
-    const posts = await PostModel.find().sort({ createdAt: -1 });
-    res.render("home.ejs", { posts });
-  } catch (error) {
-    console.log(error);
-    res.render("home.ejs", { posts: [] });
-  }
+// Session setup
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "default_secret_key",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
+// Make `user` available in all templates
+app.use((req, res, next) => {
+  res.locals.user = req.session.user || null;
+  next();
 });
 
-// app.get("/", (req, res) => {
-//   res.render("home.ejs");   //this is for home page
-// });
+// ---------------- ROUTES ----------------
+const postRoutes = require("./routes/post.routes");      // login, signup, posts
+const commentRoutes = require("./routes/comments.routes");  // optional comments
 
+// Mount routers
+app.use("/", postRoutes);       // handles /login, /signup, /home, /posts, etc.
+app.use("/", commentRoutes);    // if you have comments routes
 
-const postRoutes = require("./routes/post.routes");      // all the paths related to posts
-const commentRoutes = require("./routes/comments.routes");  // all the paths related to comments
+// Default route (optional)
+app.get("/", (req, res) => {
+  if (!req.session.user) return res.redirect("/login");
+  res.redirect("/home"); // redirect to main home page
+});
 
-app.use(postRoutes);
-app.use(commentRoutes);
-
+// ---------------- START SERVER ----------------
 app.listen(PORT, () => {
-  console.log("server is up at port", PORT);
+  console.log(`Server is running on port ${PORT}`);
 });
