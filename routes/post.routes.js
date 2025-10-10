@@ -125,7 +125,7 @@ router.get("/posts/:id/edit", async (req, res) => {
 router.put("/posts/:id", async (req, res) => {
   const postId = req.params.id;
   const { title, author, image, content } = req.body;
-
+try{
   const post = await PostModel.findById(postId);
   if (author) post.author = author;
   if (title) post.title = title;
@@ -133,7 +133,13 @@ router.put("/posts/:id", async (req, res) => {
   if (content) post.content = content;
 
   await post.save();
-  res.redirect("/posts");
+   // After update, fetch all posts again and render home
+    const posts = await PostModel.find().sort({ createdAt: -1 });
+    res.render("home", { posts, user: req.session.user });
+  } catch (error) {
+    console.error(error);
+    res.render("error", { error });
+  }
 });
 
 // Delete post
