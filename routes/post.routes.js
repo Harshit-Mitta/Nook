@@ -75,7 +75,7 @@ router.get("/logout", (req, res) => {
 // Create post page
 router.get("/posts/new", (req, res) => {
   if (!req.session.user) return res.redirect("/login");
-  res.render("posts/add");
+  res.render("posts/add", {user: req.session.user});
 });
 
 // Handle post creation
@@ -122,7 +122,7 @@ router.get("/posts/:id", async (req, res) => {
 router.get("/posts/:id/edit", async (req, res) => {
   const postId = req.params.id;
   const post = await PostModel.findById(postId);
-  res.render("posts/edit", { post });
+  res.render("posts/edit", { post , user: req.session.user});
 });
 
 // Update post
