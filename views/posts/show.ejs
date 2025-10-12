@@ -24,8 +24,8 @@
        <div style="width: 20rem;" class="mx-auto">
           <p class="display-5">Leave a comment</p>
           <form method="post" action="/posts/<%= post._id %>/comments">
-            <input name="author" class="form-control" type="text" placeholder="Your name">
-            <textarea name="text" class="form-control" rows="3"></textarea>
+            <!-- <input name="author" class="form-control" type="text" placeholder="Your name"> -->
+            <textarea name="content" class="form-control" rows="3" required></textarea>
             <button class="btn btn-sm btn-success mt-3">Submit</button>
           </form>
 
@@ -34,8 +34,14 @@
               <div class="card mt-3">
                 <div class="card-body">
                   <h5 class="card-title"><%= comment.author %></h5>
-                  <p class="card-text"><%= comment.text %></p>
-                  <a href="#" class="btn btn-sm btn-danger">Delete</a>
+                  <p class="card-text"><%= comment.content %></p>
+                  <!-- <a href="#" class="btn btn-sm btn-danger">Delete</a> -->
+                  <% if (user && user.username === comment.author) { %>
+          <!-- Only show Delete button if logged-in user is the author -->
+                 <form action="/posts/<%= post._id %>/comments/<%= comment._id %>?_method=DELETE" method="POST" style="display:inline;">
+                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                 </form>
+        <% } %>
                 </div>
               </div>
             <% } %>

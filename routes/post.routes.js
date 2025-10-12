@@ -51,7 +51,7 @@ router.post("/login", async (req, res) => {
     const user = await User.findOne({ username });
 
     if (!user) return res.send("User not found");
-    if (user.uuidPassword !== uuidPassword) return res.send("Invalid password");
+    if (user.uuidPassword !== uuidPassword) return res.send("Invalid Credentials");
 
     // Save user session
     req.session.user = user;
@@ -107,7 +107,11 @@ router.get("/posts/:id", async (req, res) => {
   try {
     const postId = req.params.id;
     const post = await PostModel.findById(postId).populate("comments");
-    res.render("posts/show", { post });
+    // res.render("posts/show", { post });
+     res.render("posts/show", {
+      post,
+      user: req.session.user
+    });
   } catch (error) {
     console.error(error);
     res.render("error", { error });
