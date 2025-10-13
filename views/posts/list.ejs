@@ -12,11 +12,131 @@
         <h5 class="card-title fw-bold"><%= post.title %></h5>
         <p class="card-text"><%= post.content %></p>
         <div class="d-flex justify-content-between align-items-center">
-          <span>❤️ <%= post.likes %></span>
+          <div class="d-flex align-items-center gap-3">
+            <button class="btn btn-link text-danger p-0 like-btn" data-post-id="<%= post._id %>">
+              <i class="fas fa-heart"></i>
+              <span class="ms-1 like-count"><%= post.likes %></span>
+            </button>
+            <button class="btn btn-link text-dark p-0 share-btn" data-post-id="<%= post._id %>" data-post-title="<%= post.title %>">
+              <i class="fas fa-share"></i>
+            </button>
+          </div>
           <a href="/posts/<%= post._id %>" class="btn btn-sm btn-outline-primary">View</a>
         </div>
       </div>
     </div>
   <% } %>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Like button functionality
+  document.querySelectorAll('.like-btn').forEach(button => {
+    button.addEventListener('click', async function() {
+      const postId = this.dataset.postId;
+      const likeCountSpan = this.querySelector('.like-count');
+      
+      try {
+        const response = await fetch(`/posts/${postId}/like`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          likeCountSpan.textContent = data.likes;
+          
+          // Add animation effect
+          this.style.transform = 'scale(1.2)';
+          setTimeout(() => {
+            this.style.transform = 'scale(1)';
+          }, 200);
+        }
+      } catch (error) {
+        console.error('Error liking post:', error);
+      }
+    });
+  });
+
+  // Share button functionality
+  document.querySelectorAll('.share-btn').forEach(button => {
+    button.addEventListener('click', function() {
+      const postId = this.dataset.postId;
+      const postTitle = this.dataset.postTitle;
+      const postUrl = `${window.location.origin}/posts/${postId}`;
+      
+      // Create share modal
+      const shareModal = document.createElement('div');
+      shareModal.className = 'modal fade';
+      shareModal.innerHTML = `
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Share Post</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <p><strong>${postTitle}</strong></p>
+              <div class="input-group mb-3">
+                <input type="text" class="form-control" value="${postUrl}" id="postUrl" readonly>
+                <button class="btn btn-outline-secondary" type="button" id="copyBtn">Copy</button>
+              </div>
+              <div class="d-flex gap-2 flex-wrap">
+                <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(postTitle)}&url=${encodeURIComponent(postUrl)}" 
+                   target="_blank" class="btn btn-primary btn-sm">
+                  <i class="fab fa-twitter"></i> Twitter
+                </a>
+                <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}" 
+                   target="_blank" class="btn btn-primary btn-sm">
+                  <i class="fab fa-facebook"></i> Facebook
+                </a>
+                <a href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(postUrl)}" 
+                   target="_blank" class="btn btn-primary btn-sm">
+                  <i class="fab fa-linkedin"></i> LinkedIn
+                </a>
+                <a href="https://wa.me/?text=${encodeURIComponent(postTitle + ' ' + postUrl)}" 
+                   target="_blank" class="btn btn-success btn-sm">
+                  <i class="fab fa-whatsapp"></i> WhatsApp
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(shareModal);
+      
+      // Initialize Bootstrap modal
+      const modal = new bootstrap.Modal(shareModal);
+      modal.show();
+      
+      // Copy to clipboard functionality
+      document.getElementById('copyBtn').addEventListener('click', function() {
+        const urlInput = document.getElementById('postUrl');
+        urlInput.select();
+        urlInput.setSelectionRange(0, 99999); // For mobile devices
+        
+        navigator.clipboard.writeText(urlInput.value).then(function() {
+          const copyBtn = document.getElementById('copyBtn');
+          const originalText = copyBtn.textContent;
+          copyBtn.textContent = 'Copied!';
+          copyBtn.className = 'btn btn-success';
+          
+          setTimeout(() => {
+            copyBtn.textContent = originalText;
+            copyBtn.className = 'btn btn-outline-secondary';
+          }, 2000);
+        });
+      });
+      
+      // Clean up modal when closed
+      shareModal.addEventListener('hidden.bs.modal', function() {
+        document.body.removeChild(shareModal);
+      });
+    });
+  });
+});
+</script>
 

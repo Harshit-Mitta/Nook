@@ -7,7 +7,7 @@ connectDB();
 async function seedPosts() {
  const posts = [
   {
-    title: "Welcome to My Reddit Clone",
+    title: "Welcome to Nook",
     content: "This is the first post on our platform!",
     author: "admin",
     likes: 5,
@@ -26,7 +26,16 @@ async function seedPosts() {
     author: "funny_user",
     likes: 8,
     image: "https://images.unsplash.com/photo-1501594907352-04cda38ebc29"
+  },
+  {
+    "title": "NEW_AI",
+    "content": "anything?????",
+    "author": "AI_guru_dharam",
+    "likes": 0,
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSGdE1HF0y962VlDcs3xNEOFk-ATf_Z_ctv9Q&s",
+   
   }
+
 ];
 
 

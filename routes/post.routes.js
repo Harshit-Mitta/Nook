@@ -153,4 +153,25 @@ router.delete("/posts/:id", async (req, res) => {
   res.redirect("/posts");
 });
 
+// Like/Unlike post
+router.post("/posts/:id/like", async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const post = await PostModel.findById(postId);
+    
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+    
+    // Toggle like (simple implementation - in real app you'd track which users liked)
+    post.likes = (post.likes || 0) + 1;
+    await post.save();
+    
+    res.json({ likes: post.likes });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 module.exports = router;
