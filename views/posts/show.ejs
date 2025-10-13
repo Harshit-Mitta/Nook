@@ -5,12 +5,48 @@
       <div class="col-12 col-lg-6">
         <div class="card mx-auto" style="width: 20rem;">
             <h5 class="card-title"><%= post.author %></h5>
-          <img style="height: 12rem;" src="<%= post.image %>" class="card-img-top" alt="...">
+          
+          <!-- Display multiple media files -->
+          <% if (post.media && post.media.length > 0) { %>
+            <div class="post-media">
+              <% if (post.media.length === 1) { %>
+                <!-- Single media file -->
+                <% if (post.media[0].isVideo) { %>
+                  <video style="height: 12rem; width: 100%; object-fit: cover;" src="<%= post.media[0].path %>" controls>
+                    Your browser does not support the video tag.
+                  </video>
+                <% } else { %>
+                  <img style="height: 12rem;" src="<%= post.media[0].path %>" class="card-img-top" alt="Post image">
+                <% } %>
+              <% } else { %>
+                <!-- Multiple media files - show as grid -->
+                <div class="media-grid" style="height: 12rem;">
+                  <% post.media.slice(0, 4).forEach((media, index) => { %>
+                    <div class="media-item <%= post.media.length > 4 && index === 3 ? 'more-overlay' : '' %>">
+                      <% if (media.isVideo) { %>
+                        <video src="<%= media.path %>" style="width: 100%; height: 100%; object-fit: cover;" controls>
+                          Your browser does not support the video tag.
+                        </video>
+                      <% } else { %>
+                        <img src="<%= media.path %>" style="width: 100%; height: 100%; object-fit: cover;" alt="Post image">
+                      <% } %>
+                      <% if (post.media.length > 4 && index === 3) { %>
+                        <div class="more-count">+<%= post.media.length - 4 %></div>
+                      <% } %>
+                    </div>
+                  <% }) %>
+                </div>
+              <% } %>
+            </div>
+          <% } else if (post.image && post.image.trim() !== '') { %>
+            <!-- Fallback to single image for backward compatibility -->
+            <img style="height: 12rem;" src="<%= post.image %>" class="card-img-top" alt="...">
+          <% } %>
           <div class="card-body">
             <h5 class="card-title"><%= post.title %></h5>
             <p class="card-text">
-              <button class="btn btn-link text-danger p-0 me-3 like-btn" data-post-id="<%= post._id %>">
-                <i class="fas fa-heart"></i>
+              <button class="btn btn-link p-0 me-3 like-btn <%= post.userLiked ? 'text-danger' : 'text-dark' %>" data-post-id="<%= post._id %>" data-liked="<%= post.userLiked %>">
+                <i class="fas fa-heart <%= post.userLiked ? '' : 'fa-regular' %>"></i>
                 <span class="ms-1 like-count"><%= post.likes %></span>
               </button>
             </p>
@@ -67,6 +103,8 @@ document.addEventListener('DOMContentLoaded', function() {
     button.addEventListener('click', async function() {
       const postId = this.dataset.postId;
       const likeCountSpan = this.querySelector('.like-count');
+      const heartIcon = this.querySelector('i');
+      const isCurrentlyLiked = this.dataset.liked === 'true';
       
       try {
         const response = await fetch(`/posts/${postId}/like`, {
@@ -78,7 +116,22 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (response.ok) {
           const data = await response.json();
-          likeCountSpan.textContent = data.likes;
+          likeCountSpan.textContent = data.likeCount;
+          
+          // Update button appearance based on like state
+          if (data.liked) {
+            this.classList.remove('text-dark');
+            this.classList.add('text-danger');
+            heartIcon.classList.remove('fa-regular');
+            heartIcon.classList.add('fa-solid');
+            this.dataset.liked = 'true';
+          } else {
+            this.classList.remove('text-danger');
+            this.classList.add('text-dark');
+            heartIcon.classList.remove('fa-solid');
+            heartIcon.classList.add('fa-regular');
+            this.dataset.liked = 'false';
+          }
           
           // Add animation effect
           this.style.transform = 'scale(1.2)';

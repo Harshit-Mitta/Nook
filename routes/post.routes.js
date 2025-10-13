@@ -5,6 +5,7 @@ const PostModel = require("../Models/post.model");
 const User = require("../Models/user.model");
 const validate = require("../middlewares/validate");
 const { createPostSchema } = require("../validators/post");
+const upload = require("../middlewares/upload");
 
 const router = express.Router();
 
@@ -78,13 +79,52 @@ router.get("/posts/new", (req, res) => {
   res.render("posts/add", {user: req.session.user});
 });
 
-// Handle post creation
-router.post("/posts", validate(createPostSchema), async (req, res) => {
+// Handle post creation with media upload
+router.post("/posts", (req, res, next) => {
+  upload.array('media', 10)(req, res, (err) => {
+    if (err) {
+      console.error('Multer error:', err);
+      return res.render("error", { error: err.message });
+    }
+    next();
+  });
+}, async (req, res) => {
   try {
-    const { title, author, image, content } = req.body;
-    await PostModel.create({ title, author, image, content });
-    res.redirect("/posts/new");
+    // Manual validation since multer needs to run first
+    const { title, author, content, image } = req.body;
+    
+    if (!title || !author || !content) {
+      return res.render("error", { error: "Title, author, and content are required" });
+    }
+    
+    // Process uploaded files
+    const mediaFiles = [];
+    if (req.files && req.files.length > 0) {
+      req.files.forEach(file => {
+        mediaFiles.push({
+          filename: file.filename,
+          originalName: file.originalname,
+          mimetype: file.mimetype,
+          size: file.size,
+          path: `/uploads/${file.filename}`,
+          isVideo: file.mimetype.startsWith('video/')
+        });
+      });
+    }
+    
+    // Keep backward compatibility for single image
+    const singleImage = image || (mediaFiles.length > 0 ? mediaFiles[0].path : "");
+    
+    await PostModel.create({ 
+      title, 
+      author, 
+      image: singleImage,
+      media: mediaFiles,
+      content 
+    });
+    res.redirect("/home");
   } catch (error) {
+    console.error(error);
     res.render("error", { error });
   }
 });
@@ -95,7 +135,15 @@ router.get("/home", async (req, res) => {
 
   try {
     const posts = await PostModel.find().sort({ createdAt: -1 });
-    res.render("home", { posts, user: req.session.user });
+    
+    // Add user like status to each post
+    const postsWithLikeStatus = posts.map(post => {
+      const postObj = post.toObject();
+      postObj.userLiked = post.likedBy.includes(req.session.user._id);
+      return postObj;
+    });
+    
+    res.render("home", { posts: postsWithLikeStatus, user: req.session.user });
   } catch (error) {
     console.error(error);
     res.render("error", { error });
@@ -107,9 +155,13 @@ router.get("/posts/:id", async (req, res) => {
   try {
     const postId = req.params.id;
     const post = await PostModel.findById(postId).populate("comments");
-    // res.render("posts/show", { post });
-     res.render("posts/show", {
-      post,
+    
+    // Add user like status
+    const postObj = post.toObject();
+    postObj.userLiked = req.session.user ? post.likedBy.includes(req.session.user._id) : false;
+    
+    res.render("posts/show", {
+      post: postObj,
       user: req.session.user
     });
   } catch (error) {
@@ -127,19 +179,29 @@ router.get("/posts/:id/edit", async (req, res) => {
 
 // Update post
 router.put("/posts/:id", async (req, res) => {
-  const postId = req.params.id;
-  const { title, author, image, content } = req.body;
-try{
-  const post = await PostModel.findById(postId);
-  if (author) post.author = author;
-  if (title) post.title = title;
-  if (image) post.image = image;
-  if (content) post.content = content;
+  try {
+    const postId = req.params.id;
+    const { title, author, image, content } = req.body;
+    
+    const post = await PostModel.findById(postId);
+    if (author) post.author = author;
+    if (title) post.title = title;
+    if (image) post.image = image;
+    if (content) post.content = content;
 
-  await post.save();
-   // After update, fetch all posts again and render home
+    await post.save();
+    
+    // After update, fetch all posts again and render home
     const posts = await PostModel.find().sort({ createdAt: -1 });
-    res.render("home", { posts, user: req.session.user });
+    
+    // Add user like status to each post
+    const postsWithLikeStatus = posts.map(post => {
+      const postObj = post.toObject();
+      postObj.userLiked = post.likedBy.includes(req.session.user._id);
+      return postObj;
+    });
+    
+    res.render("home", { posts: postsWithLikeStatus, user: req.session.user });
   } catch (error) {
     console.error(error);
     res.render("error", { error });
@@ -153,21 +215,40 @@ router.delete("/posts/:id", async (req, res) => {
   res.redirect("/posts");
 });
 
-// Like/Unlike post
+// Like/Unlike post with user tracking
 router.post("/posts/:id/like", async (req, res) => {
   try {
+    if (!req.session.user) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
     const postId = req.params.id;
+    const userId = req.session.user._id;
     const post = await PostModel.findById(postId);
     
     if (!post) {
       return res.status(404).json({ error: "Post not found" });
     }
     
-    // Toggle like (simple implementation - in real app you'd track which users liked)
-    post.likes = (post.likes || 0) + 1;
+    // Check if user already liked the post
+    const userLiked = post.likedBy.includes(userId);
+    
+    if (userLiked) {
+      // Unlike: remove user from likedBy array
+      post.likedBy = post.likedBy.filter(id => id.toString() !== userId.toString());
+      post.likes = Math.max(0, post.likes - 1);
+    } else {
+      // Like: add user to likedBy array
+      post.likedBy.push(userId);
+      post.likes = (post.likes || 0) + 1;
+    }
+    
     await post.save();
     
-    res.json({ likes: post.likes });
+    res.json({ 
+      liked: !userLiked,
+      likeCount: post.likes 
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server error" });

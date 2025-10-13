@@ -169,6 +169,51 @@
       border-radius: 0;
     }
     
+    /* Media grid for multiple files */
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2px;
+      max-height: 400px;
+      overflow: hidden;
+    }
+    
+    .media-item {
+      position: relative;
+      aspect-ratio: 1;
+      overflow: hidden;
+    }
+    
+    .media-item img,
+    .media-item video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .media-item.more-overlay {
+      position: relative;
+    }
+    
+    .more-count {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 10px 15px;
+      border-radius: 50%;
+      font-weight: bold;
+      font-size: 18px;
+      z-index: 10;
+    }
+    
+    /* Single column for single image */
+    .media-grid.single {
+      grid-template-columns: 1fr;
+    }
+    
     .post-actions {
       padding: 8px 16px;
       border-top: 1px solid #dbdbdb;
