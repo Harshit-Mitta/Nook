@@ -1,10 +1,10 @@
 <% layout('/layouts/boilerplate.ejs') -%>
 
     <p class="display-6 mb-4">Edit Product</p>
-    <form action="/posts/<%= post._id %>?_method=PUT" method="POST">
+<form action="/posts/<%= post._id %>?_method=PUT" method="POST" enctype="multipart/form-data">
       <div class="mb-3">
         <label for="post-title" class="form-label">Post Title</label>
-        <input name="name" type="text" class="form-control" id="post-title" value="<%= post.title %>">
+        <input name="title" type="text" class="form-control" id="post-title" value="<%= post.title %>">
       </div>
       <div class="mb-3">
         <label for="author" class="form-label">Author</label>
@@ -12,28 +12,39 @@
       </div>
       <div class="mb-3">
         <label for="author" class="form-label">Likes</label>
-        <input name="likes" type="text" class="form-control" id="likes" value="<%= post.likes %>">
+        <input name="likes" type="text" class="form-control" id="likes" value="<%= post.likes %>" readonly style="opacity:0.6; cursor:not-allowed;">
       </div>
       <!-- <div class="mb-3">
         <label for="post-img" class="form-label">Post Image</label>
         <input name="image" type="text" class="form-control" id="post-img" value="<%= post.image %>">
       </div> -->
      
-        <div class="mb-3">
-      <label class="form-label">Media Files</label>
-      <div class="upload-area" id="uploadArea">
-        <div class="upload-content">
-          <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
-          <p class="mb-2">Drag & drop files here or click to browse</p>
-          <p class="text-muted small">Supports: JPG, PNG, MP4, MOV (Max 50MB each, 10 files max)</p>
-          <input type="file" name="media" id="mediaInput" multiple accept="image/jpeg,image/jpg,image/png,video/mp4,video/quicktime,video/mov" style="display: none;">
-          <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('mediaInput').click()">
-            Choose Files
-          </button>
-        </div>
-         <!-- File Preview Container -->
-      <div id="filePreview" class="mt-3"></div>
-      </div>
+      <div class="mb-3">
+  <label class="form-label">Existing Media</label>
+  <% if (post.media && post.media.length > 0) { %>
+    <div class="d-flex flex-wrap gap-2 mb-2">
+      <% post.media.forEach(m => { %>
+        <% if (m.isVideo) { %>
+          <video width="300" controls>
+            <source src="<%= m.path %>" type="<%= m.mimetype %>">
+          </video>
+        <% } else { %>
+          <img src="<%= m.path %>" alt="Post Media" width="300">
+        <% } %>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <p>No media uploaded.</p>
+  <% } %>
+
+  <!-- Change Media input on new line -->
+  <label for="media" class="form-label mt-2">Change Media (optional):</label>
+  <input type="file" name="media" id="media" class="form-control">
+
+  <!-- For Preview -->
+  <div id="filePreview" class="mt-3"></div>
+</div>
+
       
       <div class="mb-3">
         <label for="content" class="form-label">Content</label>

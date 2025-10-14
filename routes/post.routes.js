@@ -178,35 +178,71 @@ router.get("/posts/:id/edit", async (req, res) => {
 });
 
 // Update post
-router.put("/posts/:id", async (req, res) => {
+
+router.put("/posts/:id", (req, res, next) => {
+  // Handle optional new media uploads (same middleware as create)
+  upload.array("media", 10)(req, res, (err) => {
+    if (err) {
+      console.error("Multer error:", err);
+      return res.render("error", { error: err.message });
+    }
+    next();
+  });
+}, async (req, res) => {
   try {
     const postId = req.params.id;
     const { title, author, image, content } = req.body;
-    
     const post = await PostModel.findById(postId);
-    if (author) post.author = author;
+
+    if (!post) {
+      return res.render("error", { error: "Post not found" });
+    }
+
+    // Update editable fields
     if (title) post.title = title;
-    if (image) post.image = image;
+    if (author) post.author = author;
     if (content) post.content = content;
 
+    // Handle new media uploads (if any)
+    if (req.files && req.files.length > 0) {
+      const mediaFiles = req.files.map(file => ({
+        filename: file.filename,
+        originalName: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size,
+        path: `/uploads/${file.filename}`,
+        isVideo: file.mimetype.startsWith("video/"),
+      }));
+      // Replace existing media with newly uploaded ones
+      post.media = mediaFiles;
+      // Also update primary image reference (for backward compatibility)
+      post.image = mediaFiles.length > 0 ? mediaFiles[0].path : post.image;
+    } else if (image) {
+      // If user updated only external image URL
+      post.image = image;
+    }
+
+    // Prevent likes from being modified
+    // (likes and likedBy untouched intentionally)
+
     await post.save();
-    
-    // After update, fetch all posts again and render home
+
+    // Re-render home page with updated posts
     const posts = await PostModel.find().sort({ createdAt: -1 });
-    
-    // Add user like status to each post
-    const postsWithLikeStatus = posts.map(post => {
-      const postObj = post.toObject();
-      postObj.userLiked = post.likedBy.includes(req.session.user._id);
+
+    const postsWithLikeStatus = posts.map(p => {
+      const postObj = p.toObject();
+      postObj.userLiked = p.likedBy.includes(req.session.user._id);
       return postObj;
     });
-    
+
     res.render("home", { posts: postsWithLikeStatus, user: req.session.user });
   } catch (error) {
     console.error(error);
     res.render("error", { error });
   }
 });
+
 
 // Delete post
 router.delete("/posts/:id", async (req, res) => {
