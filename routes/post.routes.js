@@ -251,6 +251,24 @@ router.delete("/posts/:id", async (req, res) => {
   res.redirect("/posts");
 });
 
+
+//Profile routes
+router.get("/profile", async (req, res) => {
+  try {
+    const userId = req.session.user._id; // assuming you store logged-in user's id in session
+    if (!userId) return res.redirect("/login");
+
+    const user = await User.findById(userId);
+    const posts = await PostModel.find({ author: userId });
+
+    res.render("profile.ejs", { user, posts });
+  } catch (error) {
+    console.error(error);
+    res.render("error", { error });
+  }
+});
+
+
 // Like/Unlike post with user tracking
 router.post("/posts/:id/like", async (req, res) => {
   try {

@@ -1,0 +1,72 @@
+<% layout('/layouts/boilerplate.ejs') -%>
+
+<div class="container mt-5">
+  <div class="row">
+    <!-- Left Section: User Info -->
+    <div class="col-md-4">
+      <div class="card p-3 text-center">
+        <img src="<%= user.profileImage || '/default-profile.png' %>" alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+        <h3><%= user.username %></h3>
+        <div class="d-flex justify-content-around mt-3">
+         <div class="d-flex justify-content-around mt-3">
+  <div>
+    <strong><%= posts.length %></strong>
+    <p>Posts</p>
+  </div>
+  <div>
+    <strong><%= user.followers ? user.followers.length : 0 %></strong>
+    <p>Followers</p>
+  </div>
+  <div>
+    <strong><%= user.following ? user.following.length : 0 %></strong>
+    <p>Following</p>
+  </div>
+</div>
+
+<div class="user-posts mt-4">
+  <% posts.forEach(post => { %>
+    <div class="post-card">
+      <p><%= post.content %></p>
+      <p>Likes: <%= post.likes.length %></p>
+      <p>Comments: <%= post.comments.length %></p>
+    </div>
+  <% }) %>
+</div>
+      </div>
+    </div>
+
+    <!-- Right Section: User Posts -->
+    <div class="col-md-8">
+      <h4 class="mb-3">Posts</h4>
+      <% if (posts && posts.length > 0) { %>
+        <% posts.forEach(post => { %>
+          <div class="card mb-3">
+            <% if (post.media && post.media.length > 0) { %>
+              <% post.media.forEach(media => { %>
+                <% if (media.type.startsWith("image")) { %>
+                  <img src="/uploads/<%= media.filename %>" class="card-img-top" alt="Post Image">
+                <% } else if (media.type.startsWith("video")) { %>
+                  <video class="card-img-top" controls>
+                    <source src="/uploads/<%= media.filename %>" type="<%= media.type %>">
+                    Your browser does not support the video tag.
+                  </video>
+                <% } %>
+              <% }) %>
+            <% } %>
+            <div class="card-body">
+              <p class="card-text"><%= post.caption %></p>
+              <div class="d-flex justify-content-between">
+                <span>❤️ <%= post.likes.length %></span>
+                <span>💬 <%= post.comments.length %></span>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <p>No posts yet.</p>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+
