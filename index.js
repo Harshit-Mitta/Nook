@@ -40,10 +40,12 @@ app.use((req, res, next) => {
 // ---------------- ROUTES ----------------
 const postRoutes = require("./routes/post.routes");      // login, signup, posts
 const commentRoutes = require("./routes/comments.routes");  // optional comments
+const profileRoutes = require("./routes/profile.routes"); // user profile
 
 // Mount routers
 app.use("/", postRoutes);       // handles /login, /signup, /home, /posts, etc.
 app.use("/", commentRoutes);    // if you have comments routes
+app.use("/", profileRoutes);    // handles /profile page
 
 // Default route (optional)
 app.get("/", (req, res) => {

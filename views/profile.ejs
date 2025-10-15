@@ -224,7 +224,29 @@
       <div class="col-md-9">
         <div class="profile-info">
           <h1 class="username"><%= user.username %></h1>
-          <p class="bio"><%= user.bio || "No bio yet" %></p>
+           <p id="bio-text"><%= user.bio || "No bio added yet." %></p>
+
+  <!-- Hidden form -->
+  <form
+    id="edit-bio-form"
+    action="/update-bio"
+    method="POST"
+    style="display: none;"
+  >
+    <textarea
+      name="bio"
+      id="bio-input"
+      class="form-control"
+      rows="3"
+    ><%= user.bio %></textarea>
+    <button type="submit" class="btn btn-success mt-2">Save</button>
+    <button type="button" class="btn btn-secondary mt-2" id="cancel-edit">
+      Cancel
+    </button>
+  </form>
+
+  <button id="edit-bio-btn" class="btn btn-primary mt-2">Edit Bio</button>
+
           
           <!-- Stats -->
           <div class="stats-container">
@@ -382,18 +404,39 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
+// Bio editing functionality
+  const editBtn = document.getElementById("edit-bio-btn");
+  const bioText = document.getElementById("bio-text");
+  const editForm = document.getElementById("edit-bio-form");
+  const cancelBtn = document.getElementById("cancel-edit");
+
+  editBtn.addEventListener("click", () => {
+    bioText.style.display = "none";
+    editForm.style.display = "block";
+    editBtn.style.display = "none";
+  });
+
+  cancelBtn.addEventListener("click", () => {
+    editForm.style.display = "none";
+    bioText.style.display = "block";
+    editBtn.style.display = "block";
+  });
+
+    // Scroll to posts section
 function viewPosts() {
-  // Scroll to posts section
+
   document.querySelector('.posts-section').scrollIntoView({ behavior: 'smooth' });
 }
-
-function viewFollowers() {
   // TODO: Implement followers modal/page
+function viewFollowers() {
+
   alert('Followers list coming soon!');
 }
 
-function viewFollowing() {
+
   // TODO: Implement following modal/page
+function viewFollowing() {
+
   alert('Following list coming soon!');
 }
 
