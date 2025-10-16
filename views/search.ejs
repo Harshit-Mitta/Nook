@@ -1,0 +1,30 @@
+<% layout('/layouts/boilerplate.ejs') -%>
+
+<div class="container py-5">
+  <h2 class="text-center mb-4">Search Users</h2>
+
+  <!-- Search Form -->
+  <form action="/search" method="POST" class="d-flex justify-content-center mb-4">
+    <input
+      type="text"
+      name="search"
+      class="form-control w-50 me-2"
+      placeholder="Search by username..."
+      required
+    >
+    <button type="submit" class="btn btn-primary">Search</button>
+  </form>
+
+  <!-- Results -->
+  <% if (results && results.length > 0) { %>
+    <div class="list-group w-50 mx-auto">
+      <% results.forEach(u => { %>
+        <a href="/profile/<%= u._id %>" class="list-group-item list-group-item-action">
+          <%= u.username %>
+        </a>
+      <% }) %>
+    </div>
+  <% } else if (typeof results !== 'undefined') { %>
+    <p class="text-center text-muted">No users found.</p>
+  <% } %>
+</div>

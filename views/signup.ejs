@@ -3,25 +3,55 @@
 <head>
   <meta charset="UTF-8">
   <title>Sign Up | Nook</title>
-  <link rel="stylesheet" href="/styles/login.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap CSS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
 </head>
-<body>
-  <div class="login-container">
-    <h2>Create Account</h2>
+<body class="bg-light d-flex align-items-center justify-content-center vh-100">
+
+  <div class="card shadow-sm p-4" style="width: 100%; max-width: 400px;">
+    <h2 class="text-center mb-4">Create Account</h2>
+
     <form action="/signup" method="POST">
-      <div class="form-group">
-        <label>Username</label>
-        <input type="text" name="username" required>
+      <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        <input
+          type="text"
+          class="form-control"
+          id="username"
+          name="username"
+          placeholder="Enter username"
+          required
+        >
       </div>
 
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" name="uuidPassword" required>
+      <div class="mb-3">
+        <label for="uuidPassword" class="form-label">Password</label>
+        <input
+          type="password"
+          class="form-control"
+          id="uuidPassword"
+          name="uuidPassword"
+          placeholder="Enter password"
+          required
+        >
       </div>
 
-      <button type="submit" class="btn">Sign Up</button>
+      <button type="submit" class="btn btn-success w-100 mb-3">Sign Up</button>
+
+      <!-- Redirect to Login -->
+      <div class="text-center">
+        <p class="mb-2">Already have an account?</p>
+        <a href="/login" class="btn btn-outline-primary w-100">Login</a>
+      </div>
     </form>
-    <p>Already have an account? <a href="/login">Login</a></p>
   </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
