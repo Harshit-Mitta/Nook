@@ -8,13 +8,31 @@ const { createPostSchema } = require("../validators/post");
 const upload = require("../middlewares/upload");
 
 const router = express.Router();
+
+
 // Profile routes
-router.get("/profile", async (req, res) => {
+router.get("/profile/", async (req, res) => {
   try {
     const userId = req.session.user._id;
     if (!userId) return res.redirect("/login");
 
     const user = await User.findById(userId);
+    const posts = await PostModel.find({ author: user.username }).sort({ createdAt: -1 });
+
+    res.render("profile", { user, posts });
+  } catch (error) {
+    console.error(error);
+    res.render("error", { error });
+  }
+});
+
+// View another user's profile by ID
+router.get("/profile/:id", async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).render("error", { error: "User not found" });
+
     const posts = await PostModel.find({ author: user.username }).sort({ createdAt: -1 });
 
     res.render("profile", { user, posts });

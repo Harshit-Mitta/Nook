@@ -8,7 +8,7 @@ const { createPostSchema } = require("../validators/post");
 const upload = require("../middlewares/upload");
 
 const router = express.Router();
-// Profile routes
+// Search routes
 router.get("/search", async (req, res) => {
   try {
     const userId = req.session.user._id;
