@@ -29,13 +29,13 @@ router.get("/profile/", async (req, res) => {
 // View another user's profile by ID
 router.get("/profile/:id", async (req, res) => {
   try {
-    const userId = req.params.id;
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).render("error", { error: "User not found" });
+    const profileuserId = req.params.id;
+    const profileuser = await User.findById(profileuserId);
+    if (!profileuser) return res.status(404).render("error", { error: "User not found" });
 
-    const posts = await PostModel.find({ author: user.username }).sort({ createdAt: -1 });
+    const posts = await PostModel.find({ author: profileuser.username }).sort({ createdAt: -1 });
 
-    res.render("profile", { user, posts });
+    res.render("searchedprofile", { profileuser, posts, user: req.session.user });
   } catch (error) {
     console.error(error);
     res.render("error", { error });
