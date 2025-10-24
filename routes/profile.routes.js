@@ -30,12 +30,51 @@ router.get("/profile/", async (req, res) => {
 router.get("/profile/:id", async (req, res) => {
   try {
     const profileuserId = req.params.id;
+    const user=req.session.user;
     const profileuser = await User.findById(profileuserId);
     if (!profileuser) return res.status(404).render("error", { error: "User not found" });
 
+    const isFollowing = user.following?.includes(profileuser._id.toString());
+
     const posts = await PostModel.find({ author: profileuser.username }).sort({ createdAt: -1 });
 
-    res.render("searchedprofile", { profileuser, posts, user: req.session.user });
+    res.render("searchedprofile", { profileuser, posts, user , isFollowing});
+  } catch (error) {
+    console.error(error);
+    res.render("error", { error });
+  }
+});
+
+router.post("/profile/follow/:id", async(req,res)=>{
+   try {
+    const profileuserId = req.params.id;
+    const userId = req.session.user._id;
+
+    const user = await User.findById(userId);
+    const profileuser = await User.findById(profileuserId);
+   const isFollowing= user.following?.includes(profileuser._id.toString());
+
+    if (isFollowing) {
+      // --- UNFOLLOW ---
+      user.following = user.following.filter(
+        (id) => id.toString() !== profileuserId
+      );
+      profileuser.followers = profileuser.followers.filter(
+        (id) => id.toString() !== user._id
+      );
+    } else {
+      // --- FOLLOW ---
+      user.following.push(profileuserId);
+      profileuser.followers.push(userId);
+    }
+    await user.save();
+    await profileuser.save();
+
+    res.json({ success: true,
+      isFollowing: !isFollowing,
+      followersCount: profileuser.followers.length,
+      followingCount: profileuser.following.length 
+    });
   } catch (error) {
     console.error(error);
     res.render("error", { error });
