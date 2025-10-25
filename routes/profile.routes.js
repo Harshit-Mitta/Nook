@@ -45,41 +45,104 @@ router.get("/profile/:id", async (req, res) => {
   }
 });
 
-router.post("/profile/follow/:id", async(req,res)=>{
-   try {
+// router.post("/profile/follow/:id", async(req,res)=>{
+//    try {
+//     const profileuserId = req.params.id;
+//     const userId = req.session.user._id;
+
+//     const user = await User.findById(userId);
+//     const profileuser = await User.findById(profileuserId);
+//   //  const isFollowing= user.following?.includes(profileuser._id.toString());
+//    // Fix: compare ObjectIds as strings
+//     const isFollowing = user.following.some(
+//       (id) => id.toString() === profileuserId.toString()
+//     );
+
+//     if (isFollowing) {
+//       // --- UNFOLLOW ---
+//       user.following = user.following.filter(
+//         (id) => id.toString() !== profileuserId
+//       );
+//       profileuser.followers = profileuser.followers.filter(
+//         (id) => id.toString() !== user._id
+//       );
+//     } else {
+//       // --- FOLLOW ---
+//       user.following.push(profileuserId);
+//       profileuser.followers.push(userId);
+//     }
+//     await user.save();
+//     await profileuser.save();
+
+//     res.json({ success: true,
+//       isFollowing: !isFollowing,
+//       followersCount: profileuser.followers.length
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.render("error", { error });
+//   }
+// });
+router.post("/profile/follow/:id", async (req, res) => {
+  try {
     const profileuserId = req.params.id;
     const userId = req.session.user._id;
 
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Not logged in" });
+    }
+
     const user = await User.findById(userId);
     const profileuser = await User.findById(profileuserId);
-   const isFollowing= user.following?.includes(profileuser._id.toString());
+
+    if (!user || !profileuser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Convert both sides to string to ensure match
+    const isFollowing = user.following.map(id => id.toString()).includes(profileuserId.toString());
 
     if (isFollowing) {
-      // --- UNFOLLOW ---
+      // ✅ UNFOLLOW LOGIC
       user.following = user.following.filter(
-        (id) => id.toString() !== profileuserId
+        (id) => id.toString() !== profileuserId.toString()
       );
       profileuser.followers = profileuser.followers.filter(
-        (id) => id.toString() !== user._id
+        (id) => id.toString() !== userId.toString()
       );
     } else {
-      // --- FOLLOW ---
-      user.following.push(profileuserId);
-      profileuser.followers.push(userId);
+      // ✅ FOLLOW LOGIC
+      if (!user.following.includes(profileuserId)) {
+        user.following.push(profileuserId);
+      }
+      if (!profileuser.followers.includes(userId)) {
+        profileuser.followers.push(userId);
+      }
     }
-    await user.save();
-    await profileuser.save();
 
-    res.json({ success: true,
+    // Save both users
+    await Promise.all([user.save(), profileuser.save()]);
+
+    // Debugging — print actual counts to verify
+    console.log({
+      profileUsername: profileuser.username,
+      followers: profileuser.followers.length,
+      following: user.following.length,
+    });
+
+    // ✅ Return only correct followersCount for profileuser
+    return res.json({
+      success: true,
       isFollowing: !isFollowing,
       followersCount: profileuser.followers.length,
-      followingCount: profileuser.following.length 
     });
+
   } catch (error) {
-    console.error(error);
-    res.render("error", { error });
+    console.error("Follow/Unfollow Error:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 });
+
 
 // Upload profile picture
 router.post("/profile/picture", upload.single('profilePicture'), async (req, res) => {
@@ -121,52 +184,52 @@ router.post("/profile/picture", upload.single('profilePicture'), async (req, res
   }
 });
 
-// Follow/Unfollow user
-router.post("/follow/:userId", async (req, res) => {
-  try {
-    if (!req.session.user) {
-      return res.status(401).json({ error: "User not authenticated" });
-    }
+// // Follow/Unfollow user
+// router.post("/follow/:userId", async (req, res) => {
+//   try {
+//     if (!req.session.user) {
+//       return res.status(401).json({ error: "User not authenticated" });
+//     }
 
-    const currentUserId = req.session.user._id;
-    const targetUserId = req.params.userId;
+//     const currentUserId = req.session.user._id;
+//     const targetUserId = req.params.userId;
 
-    if (currentUserId === targetUserId) {
-      return res.status(400).json({ error: "Cannot follow yourself" });
-    }
+//     if (currentUserId === targetUserId) {
+//       return res.status(400).json({ error: "Cannot follow yourself" });
+//     }
 
-    const currentUser = await User.findById(currentUserId);
-    const targetUser = await User.findById(targetUserId);
+//     const currentUser = await User.findById(currentUserId);
+//     const targetUser = await User.findById(targetUserId);
 
-    if (!currentUser || !targetUser) {
-      return res.status(404).json({ error: "User not found" });
-    }
+//     if (!currentUser || !targetUser) {
+//       return res.status(404).json({ error: "User not found" });
+//     }
 
-    const isFollowing = currentUser.following.includes(targetUserId);
+//     const isFollowing = currentUser.following.includes(targetUserId);
 
-    if (isFollowing) {
-      // Unfollow
-      currentUser.following = currentUser.following.filter(id => id.toString() !== targetUserId);
-      targetUser.followers = targetUser.followers.filter(id => id.toString() !== currentUserId);
-    } else {
-      // Follow
-      currentUser.following.push(targetUserId);
-      targetUser.followers.push(currentUserId);
-    }
+//     if (isFollowing) {
+//       // Unfollow
+//       currentUser.following = currentUser.following.filter(id => id.toString() !== targetUserId);
+//       targetUser.followers = targetUser.followers.filter(id => id.toString() !== currentUserId);
+//     } else {
+//       // Follow
+//       currentUser.following.push(targetUserId);
+//       targetUser.followers.push(currentUserId);
+//     }
 
-    await currentUser.save();
-    await targetUser.save();
+//     await currentUser.save();
+//     await targetUser.save();
 
-    res.json({ 
-      success: true, 
-      isFollowing: !isFollowing,
-      followersCount: targetUser.followers.length 
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Server error" });
-  }
-});
+//     res.json({ 
+//       success: true, 
+//       isFollowing: !isFollowing,
+//       followersCount: targetUser.followers.length 
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Server error" });
+//   }
+// });
 
 // Update bio
 router.post("/update-bio", async (req, res) => {

@@ -306,15 +306,24 @@
     followForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const btn = followForm.querySelector("button");
-      const res = await fetch(followForm.action, { method: "POST" });
-      const data = await res.json();
 
-      if (data.success) {
-        btn.textContent = data.isFollowing ? "Unfollow" : "Follow";
-        btn.className = `btn btn-${data.isFollowing ? "danger" : "primary"}`;
-        document.getElementById("followersCount").textContent = data.followersCount;
-        document.getElementById("followingCount").textContent = data.followingCount;
+      try {
+        const res = await fetch(followForm.action, { method: "POST" });
+        const data = await res.json();
+
+        if (data.success) {
+          btn.textContent = data.isFollowing ? "Unfollow" : "Follow";
+          btn.className = `btn btn-${data.isFollowing ? "danger" : "primary"}`;
+          document.getElementById("followersCount").textContent =
+            data.followersCount;
+        } else {
+          alert("Something went wrong!");
+        }
+      } catch (err) {
+        console.error("Follow/unfollow error:", err);
       }
     });
   }
+
+
 </script>
