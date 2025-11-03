@@ -1,0 +1,25 @@
+<% layout('/layouts/boilerplate.ejs') -%>
+
+<div class="send-message">
+  <h2>Send a Message</h2>
+
+  <form action="/messages/send/<%= receiverId %>" method="POST">
+    <label>Message</label>
+    <textarea name="body" rows="4" required></textarea>
+
+    <button type="submit">Send</button>
+  </form>
+</div>
+
+<style>
+.send-message { width: 50%; margin: 2rem auto; }
+form textarea {
+  width: 100%; padding: 10px; border-radius: 6px;
+  border: 1px solid #ccc; margin-bottom: 1rem;
+}
+button {
+  background: #007bff; color: white; border: none;
+  padding: 10px 20px; border-radius: 6px;
+}
+button:hover { background: #0056b3; }
+</style>

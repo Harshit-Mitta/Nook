@@ -124,11 +124,11 @@ router.post("/profile/follow/:id", async (req, res) => {
     await Promise.all([user.save(), profileuser.save()]);
 
     // Debugging — print actual counts to verify
-    console.log({
-      profileUsername: profileuser.username,
-      followers: profileuser.followers.length,
-      following: user.following.length,
-    });
+    // console.log({
+    //   profileUsername: profileuser.username,
+    //   followers: profileuser.followers.length,
+    //   following: user.following.length,
+    // });
 
     // ✅ Return only correct followersCount for profileuser
     return res.json({

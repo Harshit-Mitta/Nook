@@ -1,0 +1,29 @@
+<% layout('/layouts/boilerplate.ejs') -%>
+
+<div class="inbox">
+  <h2>All Messages</h2>
+
+  <% if (messages.length === 0) { %>
+    <p>No messages found.</p>
+  <% } else { %>
+    <% messages.forEach(msg => { %>
+      <div class="message-card">
+        <p><strong>From:</strong> <%= msg.sender ? msg.sender.name : "Unknown" %></p>
+        <p><strong>To:</strong> <%= msg.receiver ? msg.receiver.name : "Unknown" %></p>
+        <p><%= msg.body %></p>
+        <small><%= msg.createdAt.toLocaleString() %></small>
+      </div>
+    <% }) %>
+  <% } %>
+</div>
+
+<style>
+.inbox { width: 60%; margin: 2rem auto; }
+.message-card {
+  border: 1px solid #ccc;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  background: #fafafa;
+}
+</style>
