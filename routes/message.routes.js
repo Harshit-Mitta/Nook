@@ -64,6 +64,7 @@ router.get("/messages/search", async (req, res) => {
 
     res.render("messages", { 
       messages: [], 
+      chatList:[],
       chatUser: null, 
       chatMessages: [], 
       searchResults: users, 
