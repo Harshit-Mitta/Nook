@@ -63,30 +63,40 @@
         <div class="chat-header">
           <h2><%= chatUser.username %></h2>
         </div>
-
-        <div class="chat-body">
-          <% if (chatMessages.length > 0) { %>
-            <% chatMessages.forEach(msg => { %>
-              <div class="msg <%= msg.sender._id === user._id ? 'sent' : 'received' %>">
-                <%= msg.body %>
+    
+        <div class="chat-body" id="chatBody">
+          <% if (chatMessages && chatMessages.length > 0) { %>
+            <% const myId = String(user && (user._id || user.id)); %>
+            <% chatMessages.forEach(m => { 
+                 const senderId = String(m.sender && (m.sender._id || m.sender));
+                 const mine = senderId === myId;
+            %>
+              <div class="msg-row <%= mine ? 'sent' : 'received' %>">
+                <div class="msg"><%= m.body %></div>
               </div>
             <% }) %>
           <% } else { %>
             <p class="empty-text">No messages yet. Start the conversation!</p>
           <% } %>
         </div>
-
-        <form class="chat-input" action="/messages/send/<%= chatUser._id %>" method="POST">
+    
+        <form class="chat-input" action="/messages/send/<%= chatUser._id %>" method="POST" autocomplete="off">
           <input type="text" name="body" placeholder="Type a message..." required />
           <button type="submit">Send</button>
         </form>
-
+    
       <% } else { %>
         <div class="chat-empty">
           <p>Select or search a user to start messaging</p>
         </div>
       <% } %>
     </div>
+    
+    <script>
+      // Auto-scroll to the latest message
+      const cb = document.getElementById('chatBody');
+      if (cb) cb.scrollTop = cb.scrollHeight;
+    </script>
   </div>
 </div>
 
@@ -241,12 +251,15 @@
 }
 
 .chat-header {
+  position: sticky;
+  top: 0;
   background: #007bff;
   color: white;
   padding: 15px;
   text-align: center;
   font-size: 18px;
   font-weight: 500;
+  z-index: 1;
 }
 
 .chat-body {
@@ -256,25 +269,37 @@
   background: #f9f9f9;
 }
 
+/* Row controls alignment cleanly */
+.msg-row {
+  display: flex;
+  margin: 4px 0 12px;
+}
+
+.msg-row.sent { justify-content: flex-end; }
+.msg-row.received { justify-content: flex-start; }
+
 .msg {
   max-width: 70%;
-  margin-bottom: 12px;
   padding: 10px 14px;
-  border-radius: 10px;
+  border-radius: 14px;
   word-wrap: break-word;
+  line-height: 1.35;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06);
 }
 
-.msg.sent {
+/* Outgoing (you) */
+.msg-row.sent .msg {
   background: #007bff;
-  color: white;
-  margin-left: auto;
-  text-align: right;
+  color: #fff;
+  border-bottom-right-radius: 6px; /* subtle “tail” feel */
+  text-align: left;
 }
 
-.msg.received {
+/* Incoming */
+.msg-row.received .msg {
   background: #e9e9e9;
   color: #333;
-  text-align: left;
+  border-bottom-left-radius: 6px;
 }
 
 .chat-input {
